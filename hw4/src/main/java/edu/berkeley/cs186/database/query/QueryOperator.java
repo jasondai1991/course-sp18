@@ -109,7 +109,6 @@ public abstract class QueryOperator {
    * @return
    */
   public boolean checkColumnNameEquality(String fromSchema, String specified) {
-
     if (fromSchema.equals(specified)) {
       return true;
     }
@@ -146,7 +145,6 @@ public abstract class QueryOperator {
         foundName = sourceColumnName;
       }
     }
-
     if (!found) {
       throw new QueryPlanException("No column " + columnName + " found.");
     }

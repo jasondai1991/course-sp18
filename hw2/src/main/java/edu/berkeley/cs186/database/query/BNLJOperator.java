@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query; //hw4
+package edu.berkeley.cs186.database.query;  //hw2
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -49,19 +49,35 @@ public class BNLJOperator extends JoinOperator {
   }
 
   /**
+   * BNLJ: Block Nested Loop Join
+   *  See lecture slides.
+   *
    * An implementation of Iterator that provides an iterator interface for this operator.
+   *
+   * Before proceeding, you should read and understand SNLJOperator.java
+   *    You can find it in the same directory as this file.
+   *
+   * Word of advice: try to decompose the problem into distinguishable sub-problems.
+   *    This means you'll probably want to add more methods than those given (Once again,
+   *    SNLJOperator.java might prove to be a useful reference).
    */
-  private class BNLJIterator implements Iterator<Record> {
-    private Iterator<Record> leftIterator;
-    private Iterator<Record> rightIterator;
-    private Record leftRecord;
-    private Record nextRecord;
+  private class BNLJIterator extends JoinIterator {
+    /**
+     * Some member variables are provided for guidance, but there are many possible solutions.
+     * You should implement the solution that's best for you, using any member variables you need.
+     * You're free to use these member variables, but you're not obligated to.
+     */
+
+    //private Iterator<Page> leftIterator = null;
+    //private Iterator<Page> rightIterator = null;
+    //private BacktrackingIterator<Record> leftRecordIterator = null;
+    //private BacktrackingIterator<Record> rightRecordIterator = null;
+    //private Record leftRecord = null;
+    //private Record nextRecord = null;
 
     public BNLJIterator() throws QueryPlanException, DatabaseException {
-      this.leftIterator = BNLJOperator.this.getLeftSource().iterator();
-      this.rightIterator = null;
-      this.leftRecord = null;
-      this.nextRecord = null;
+      super();
+      throw new UnsupportedOperationException("hw3: TODO");
     }
 
     /**
@@ -70,38 +86,7 @@ public class BNLJOperator extends JoinOperator {
      * @return true if this iterator has another record to yield, otherwise false
      */
     public boolean hasNext() {
-      if (this.nextRecord != null) {
-        return true;
-      }
-      while (true) {
-        if (this.leftRecord == null) {
-          if (this.leftIterator.hasNext()) {
-            this.leftRecord = this.leftIterator.next();
-            try {
-              this.rightIterator = BNLJOperator.this.getRightSource().iterator();
-            } catch (QueryPlanException q) {
-              return false;
-            } catch (DatabaseException e) {
-              return false;
-            }
-          } else {
-            return false;
-          }
-        }
-        while (this.rightIterator.hasNext()) {
-          Record rightRecord = this.rightIterator.next();
-          DataBox leftJoinValue = this.leftRecord.getValues().get(BNLJOperator.this.getLeftColumnIndex());
-          DataBox rightJoinValue = rightRecord.getValues().get(BNLJOperator.this.getRightColumnIndex());
-          if (leftJoinValue.equals(rightJoinValue)) {
-            List<DataBox> leftValues = new ArrayList<DataBox>(this.leftRecord.getValues());
-            List<DataBox> rightValues = new ArrayList<DataBox>(rightRecord.getValues());
-            leftValues.addAll(rightValues);
-            this.nextRecord = new Record(leftValues);
-            return true;
-          }
-        }
-        this.leftRecord = null;
-      }
+      throw new UnsupportedOperationException("hw3: TODO");
     }
 
     /**
@@ -111,12 +96,7 @@ public class BNLJOperator extends JoinOperator {
      * @throws NoSuchElementException if there are no more Records to yield
      */
     public Record next() {
-      if (this.hasNext()) {
-        Record r = this.nextRecord;
-        this.nextRecord = null;
-        return r;
-      }
-      throw new NoSuchElementException();
+      throw new UnsupportedOperationException("hw3: TODO");
     }
 
     public void remove() {

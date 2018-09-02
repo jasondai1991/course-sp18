@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query; //hw3
+package edu.berkeley.cs186.database.query; //hw2
 
 import java.util.ArrayList;
 import java.util.Iterator;

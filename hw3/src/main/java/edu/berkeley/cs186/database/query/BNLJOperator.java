@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query;
+package edu.berkeley.cs186.database.query;  //hw3
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -13,30 +13,40 @@ import edu.berkeley.cs186.database.databox.DataBox;
 import edu.berkeley.cs186.database.io.Page;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
+import edu.berkeley.cs186.database.table.stats.TableStats;
 
 public class BNLJOperator extends JoinOperator {
 
-  protected int numBuffers;
+  private int numBuffers;
 
   public BNLJOperator(QueryOperator leftSource,
                       QueryOperator rightSource,
                       String leftColumnName,
                       String rightColumnName,
                       Database.Transaction transaction) throws QueryPlanException, DatabaseException {
-    super(leftSource,
-            rightSource,
-            leftColumnName,
-            rightColumnName,
-            transaction,
-            JoinType.BNLJ);
+    super(leftSource, rightSource, leftColumnName, rightColumnName, transaction, JoinType.BNLJ);
 
     this.numBuffers = transaction.getNumMemoryPages();
+    this.stats = this.estimateStats();
+    this.cost = this.estimateIOCost();
   }
 
   public Iterator<Record> iterator() throws QueryPlanException, DatabaseException {
     return new BNLJIterator();
   }
 
+  public int estimateIOCost() throws QueryPlanException {
+    //This method implements the the IO cost estimation of the Block Nested Loop Join
+
+    int usableBuffers = numBuffers - 2; //Common mistake have to first calculate the number of usable buffers
+
+    int numLeftPages = getLeftSource().getStats().getNumPages();
+
+    int numRightPages = getRightSource().getStats().getNumPages();
+
+    return ((int) Math.ceil((double) numLeftPages / (double) usableBuffers)) * numRightPages + numLeftPages;
+
+  }
 
   /**
    * BNLJ: Block Nested Loop Join

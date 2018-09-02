@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query;
+package edu.berkeley.cs186.database.query; //hw4
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,6 +6,7 @@ import java.util.List;
 
 import edu.berkeley.cs186.database.Database;
 import edu.berkeley.cs186.database.DatabaseException;
+import edu.berkeley.cs186.database.common.BacktrackingIterator;
 import edu.berkeley.cs186.database.databox.DataBox;
 import edu.berkeley.cs186.database.databox.Type;
 import edu.berkeley.cs186.database.io.Page;
@@ -65,7 +66,7 @@ public abstract class JoinOperator extends QueryOperator {
   @Override
   public QueryOperator getSource() throws QueryPlanException {
     throw new QueryPlanException("There is no single source for join operators. Please use " +
-            "getRightSource and getLeftSource and the corresponding set methods.");
+        "getRightSource and getLeftSource and the corresponding set methods.");
   }
 
   public QueryOperator getLeftSource() {
@@ -96,9 +97,9 @@ public abstract class JoinOperator extends QueryOperator {
     List<Type> leftSchemaTypes = new ArrayList<>(leftSchema.getFieldTypes());
     List<Type> rightSchemaTypes = new ArrayList<>(rightSchema.getFieldTypes());
     if (!leftSchemaTypes.get(this.leftColumnIndex).getClass().equals(rightSchemaTypes.get(
-            this.rightColumnIndex).getClass())) {
+        this.rightColumnIndex).getClass())) {
       throw new QueryPlanException("Mismatched types of columns " + leftColumnName + " and "
-              + rightColumnName + ".");
+          + rightColumnName + ".");
     }
     leftSchemaNames.addAll(rightSchemaNames);
     leftSchemaTypes.addAll(rightSchemaTypes);
@@ -189,6 +190,30 @@ public abstract class JoinOperator extends QueryOperator {
     return this.rightColumnIndex;
   }
 
+  public Record getRecord(String tableName, RecordId rid) throws DatabaseException {
+    return this.transaction.getRecord(tableName, rid);
+  }
+
+  public RecordIterator getRecordIterator(String tableName) throws DatabaseException {
+    return this.transaction.getRecordIterator(tableName);
+  }
+
+  public BacktrackingIterator<Page> getPageIterator(String tableName) throws DatabaseException {
+    return this.transaction.getPageIterator(tableName);
+  }
+
+  public BacktrackingIterator<Record> getBlockIterator(String tableName, Page[] block) throws DatabaseException {
+    return this.transaction.getBlockIterator(tableName, block);
+  }
+
+  public BacktrackingIterator<Record> getBlockIterator(String tableName, BacktrackingIterator<Page> block) throws DatabaseException {
+    return this.transaction.getBlockIterator(tableName, block);
+  }
+
+  public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> block, int maxPages) throws DatabaseException {
+    return this.transaction.getBlockIterator(tableName, block, maxPages);
+  }
+
   public RecordIterator getTableIterator(String tableName) throws DatabaseException {
     return this.transaction.getRecordIterator(tableName);
   }
@@ -211,7 +236,8 @@ public abstract class JoinOperator extends QueryOperator {
 
   /**
    * All iterators for subclasses of JoinOperator should subclass from
-   * JoinIterator; JoinIterator handles temp table creation as needed.
+   * JoinIterator; JoinIterator handles creating temporary tables out of the left and right
+   * input operators.
    */
   protected abstract class JoinIterator implements Iterator<Record> {
     private String leftTableName;
