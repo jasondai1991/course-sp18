@@ -8,6 +8,7 @@ import edu.berkeley.cs186.database.DatabaseException;
 import edu.berkeley.cs186.database.TestUtils;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
+import edu.berkeley.cs186.database.table.stats.TableStats;
 
 public class TestSourceOperator extends QueryOperator {
   private List<Record> recordList;
@@ -19,6 +20,9 @@ public class TestSourceOperator extends QueryOperator {
     this.recordList = null;
     this.setSchema = null;
     this.numRecords = 100;
+
+    this.stats = this.estimateStats();
+    this.cost = this.estimateIOCost();
   }
 
   public TestSourceOperator(List<Record> recordIterator, Schema schema) throws QueryPlanException {
@@ -28,6 +32,9 @@ public class TestSourceOperator extends QueryOperator {
     this.setOutputSchema(schema);
     this.setSchema = schema;
     this.numRecords = 100;
+
+    this.stats = this.estimateStats();
+    this.cost = this.estimateIOCost();
   }
 
 
@@ -41,6 +48,9 @@ public class TestSourceOperator extends QueryOperator {
     this.recordList = null;
     this.setSchema = null;
     this.numRecords = numRecords;
+
+    this.stats = this.estimateStats();
+    this.cost = this.estimateIOCost();
   }
 
 
@@ -67,4 +77,11 @@ public class TestSourceOperator extends QueryOperator {
     return this.setSchema;
   }
 
+  public TableStats estimateStats() throws QueryPlanException {
+    return new TableStats(this.computeSchema());
+  }
+
+  public int estimateIOCost() throws QueryPlanException {
+    return 1;
+  }
 }
