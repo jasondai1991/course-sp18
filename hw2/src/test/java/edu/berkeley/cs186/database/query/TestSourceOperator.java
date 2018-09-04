@@ -20,9 +20,6 @@ public class TestSourceOperator extends QueryOperator {
     this.recordList = null;
     this.setSchema = null;
     this.numRecords = 100;
-
-    this.stats = this.estimateStats();
-    this.cost = this.estimateIOCost();
   }
 
   public TestSourceOperator(List<Record> recordIterator, Schema schema) throws QueryPlanException {
@@ -32,9 +29,6 @@ public class TestSourceOperator extends QueryOperator {
     this.setOutputSchema(schema);
     this.setSchema = schema;
     this.numRecords = 100;
-
-    this.stats = this.estimateStats();
-    this.cost = this.estimateIOCost();
   }
 
 
@@ -42,25 +36,12 @@ public class TestSourceOperator extends QueryOperator {
   public boolean isSequentialScan() {
     return false;
   }
-  
-  //does nothing
-  public int estimateIOCost() throws QueryPlanException{
-	    return 0;
-  }
-  
-  //does nothing
-  public TableStats estimateStats() throws QueryPlanException {
-	    return null;
-	  }
 
   public TestSourceOperator(int numRecords) throws QueryPlanException {
     super(OperatorType.SEQSCAN, null);
     this.recordList = null;
     this.setSchema = null;
     this.numRecords = numRecords;
-
-    this.stats = this.estimateStats();
-    this.cost = this.estimateIOCost();
   }
 
 
@@ -86,4 +67,13 @@ public class TestSourceOperator extends QueryOperator {
     }
     return this.setSchema;
   }
+
+  public TableStats estimateStats() throws QueryPlanException {
+    return new TableStats(this.computeSchema());
+  }
+
+  public int estimateIOCost() throws QueryPlanException {
+    return 1;
+  }
+
 }

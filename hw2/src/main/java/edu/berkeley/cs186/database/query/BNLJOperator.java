@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query;  //hw2
+package edu.berkeley.cs186.database.query;  //hw3
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -27,8 +27,8 @@ public class BNLJOperator extends JoinOperator {
     super(leftSource, rightSource, leftColumnName, rightColumnName, transaction, JoinType.BNLJ);
 
     this.numBuffers = transaction.getNumMemoryPages();
-    this.stats = this.estimateStats();
-    this.cost = this.estimateIOCost();
+    //this.stats = this.estimateStats();
+    //this.cost = this.estimateIOCost();
   }
 
   public Iterator<Record> iterator() throws QueryPlanException, DatabaseException {

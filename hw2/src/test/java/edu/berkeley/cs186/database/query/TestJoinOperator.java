@@ -24,15 +24,9 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.*;
 
 public class TestJoinOperator {
-	
+
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
-  
-  @Test
-  public void mockTest() {
-	  assertTrue(true);
-  }
-  /*
 
   @Test(timeout=5000)
   public void testOperatorSchema() throws QueryPlanException, DatabaseException, IOException {
@@ -449,6 +443,5 @@ public class TestJoinOperator {
     assertTrue(count == 82944);
 
   }
-  */
 
 }

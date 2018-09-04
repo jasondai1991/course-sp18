@@ -45,11 +45,8 @@ public class TestSortOperator {
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
 
-  @Test
-  public void mockTest() {
-	  assertTrue(true);
-  }
-  /*
+
+
   @Test(timeout=5000)
   public void testSortRun() throws QueryPlanException, DatabaseException, IOException {
     File tempDir = tempFolder.newFolder("sortTest");
@@ -248,6 +245,6 @@ public class TestSortOperator {
     }
     assertTrue(i == 288*3);
 
-  }*/
+  }
 
 }

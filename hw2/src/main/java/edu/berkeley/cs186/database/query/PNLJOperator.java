@@ -37,7 +37,7 @@ public class PNLJOperator extends JoinOperator {
   public int estimateIOCost() throws QueryPlanException {
     //does nothing
     return 0;
-  }  
+  }
 
 
   /**
