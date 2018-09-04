@@ -31,6 +31,11 @@ public class SortMergeOperator extends JoinOperator {
     return new SortMergeOperator.SortMergeIterator();
   }
 
+  public int estimateIOCost() throws QueryPlanException {
+    //does nothing
+    return 0;
+  }   
+
   /**
    * An implementation of Iterator that provides an iterator interface for this operator.
    *

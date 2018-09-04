@@ -198,10 +198,6 @@ public abstract class JoinOperator extends QueryOperator {
     return this.transaction.getRecordIterator(tableName);
   }
 
-  public BacktrackingIterator<Page> getPageIterator(String tableName) throws DatabaseException {
-    return this.transaction.getPageIterator(tableName);
-  }
-
   public BacktrackingIterator<Record> getBlockIterator(String tableName, Page[] block) throws DatabaseException {
     return this.transaction.getBlockIterator(tableName, block);
   }
