@@ -34,6 +34,11 @@ public class PNLJOperator extends JoinOperator {
     return new PNLJIterator();
   }
 
+  public int estimateIOCost() throws QueryPlanException {
+    //does nothing
+    return 0;
+  }  
+
 
   /**
    * PNLJ: Page Nested Loop Join

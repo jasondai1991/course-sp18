@@ -42,6 +42,16 @@ public class TestSourceOperator extends QueryOperator {
   public boolean isSequentialScan() {
     return false;
   }
+  
+  //does nothing
+  public int estimateIOCost() throws QueryPlanException{
+	    return 0;
+  }
+  
+  //does nothing
+  public TableStats estimateStats() throws QueryPlanException {
+	    return null;
+	  }
 
   public TestSourceOperator(int numRecords) throws QueryPlanException {
     super(OperatorType.SEQSCAN, null);

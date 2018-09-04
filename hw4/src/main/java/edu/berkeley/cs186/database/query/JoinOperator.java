@@ -1,4 +1,4 @@
-package edu.berkeley.cs186.database.query; //hw4
+package edu.berkeley.cs186.database.query; //hw2
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -127,7 +127,7 @@ public abstract class JoinOperator extends QueryOperator {
     return r;
   }
 
-  /**
+/**
    * Estimates the table statistics for the result of executing this query operator.
    *
    * @return estimated TableStats
@@ -196,10 +196,6 @@ public abstract class JoinOperator extends QueryOperator {
 
   public RecordIterator getRecordIterator(String tableName) throws DatabaseException {
     return this.transaction.getRecordIterator(tableName);
-  }
-
-  public BacktrackingIterator<Page> getPageIterator(String tableName) throws DatabaseException {
-    return this.transaction.getPageIterator(tableName);
   }
 
   public BacktrackingIterator<Record> getBlockIterator(String tableName, Page[] block) throws DatabaseException {
