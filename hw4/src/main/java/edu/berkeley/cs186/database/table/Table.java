@@ -443,7 +443,55 @@ public class Table implements Iterable<Record>, Closeable {
   public RecordIterator iterator() {
       return new RecordIterator(this, ridIterator());
   }
+  
 
+  public BacktrackingIterator<Record> blockIterator(Page[] block) {
+    return new RecordIterator(this, new RIDBlockIterator(block));
+  }
+
+  public BacktrackingIterator<Record> blockIterator(BacktrackingIterator<Page> block) {
+    return new RecordIterator(this, new RIDBlockIterator(block));
+  }
+
+  public BacktrackingIterator<Record> blockIterator(Iterator<Page> block, int maxRecords) {
+    return new RecordIterator(this, new RIDBlockIterator(block, maxRecords));
+  }
+
+  /**
+   * RIDPageIterator is a BacktrackingIterator over the RecordIds of a single
+   * page of the table.
+   *
+   * See comments on the BacktrackingIterator interface for how mark and reset
+   * should function.
+   */
+  public class RIDPageIterator implements BacktrackingIterator<RecordId> {
+    //member variables go here
+
+    /**
+     * The following method signature is provided for guidance, but not necessary. Feel free to
+     * implement your own solution using whatever helper methods you would like.
+     */
+
+    public RIDPageIterator(Page page) {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public RecordId next() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public void mark() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public void reset() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+  }
 
   /**
    * Helper function to create a BacktrackingIterator from an Iterator of
@@ -464,6 +512,133 @@ public class Table implements Iterable<Record>, Closeable {
       block = temp;
     }
     return new ArrayBacktrackingIterator(block);
+  }
+
+  /**
+   * RIDBlockIterator is a BacktrackingIterator yielding RecordIds of a block
+   * of pages.
+   *
+   * A "block" is specified by a BacktrackingIterator of Pages: every single
+   * Page returned by the iterator is part of the block. Your code should only
+   * utilize this iterator's functionality for fetching pages, i.e. you should
+   * *not* fetch every Page from the block iterator into an array or collection.
+   *
+   * The mark and reset methods have been provided for you already, and work by
+   * saving a BacktrackingIterator of RecordIds over the appropriate page.
+   *
+   * The iterator maintains a few pieces of state:
+   * - block is simply the BacktrackingIterator<Page> specifying the pages in
+   *   the block.
+   * - blockIter is a BacktrackingIterator over RecordIds of the current page we
+   *   are iterating over.
+   * - prevRecordId is the last RecordId that next() returned.
+   * - nextRecordId is the next RecordId that next() will return.
+   *
+   * In addition to these, we maintain some state to help with the
+   * implementation of mark() and reset(); you should not need to use these
+   * for implementing next() and hasNext().
+   */
+  public class RIDBlockIterator implements BacktrackingIterator<RecordId> {
+    private BacktrackingIterator<Page> block = null;
+    private BacktrackingIterator<RecordId> blockIter = null;
+
+    private BacktrackingIterator<RecordId> markedBlockIter = null;
+    private RecordId markedPrevRecordId = null;
+
+    private RecordId prevRecordId = null;
+    private RecordId nextRecordId = null;
+
+    public RIDBlockIterator(BacktrackingIterator<Page> block) {
+      this.block = block;
+      throw new UnsupportedOperationException("hw3: TODO"); //if you want to add anything to this constructor, feel free to
+
+    }
+
+    /**
+     * This is an extra constructor that allows one to create an
+     * RIDBlockIterator by taking the first maxPages of an iterator of Pages.
+     *
+     * If there are fewer than maxPages number of Pages available in pageIter,
+     * then all remaining pages shall be used in the "block"; otherwise,
+     * only the first maxPages number of pages shall be used.
+     *
+     * Note that this also advances pageIter by maxPages, so you can do the
+     * following:
+     *
+     * Iterator<Page> pageIter = // ...
+     * RIDBlockIterator firstBlock = new RIDBlockIterator(pageIter, 100);
+     * RIDBlockIterator secondBlock = new RIDBlockIterator(pageIter, 100);
+     * RIDBlockIterator thirdBlock = new RIDBlockIterator(pageIter, 100);
+     *
+     * to get iterators over the first 100 pages, second 100 pages, and third
+     * 100 pages.
+     */
+    public RIDBlockIterator(Iterator<Page> pageIter, int maxPages) {
+      this(Table.getBlockFromIterator(pageIter, maxPages));
+    }
+
+    /**
+     * This is an extra constructor that allows one to create an
+     * RIDBlockIterator over an array of Pages.
+     *
+     * Every page in the pages array will be used in the block of pages.
+     */
+    public RIDBlockIterator(Page[] pages) {
+      this(new ArrayBacktrackingIterator(pages));
+    }
+
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public RecordId next() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    /**
+     * Marks the last recordId returned by next().
+     *
+     * This implementation of mark simply marks and saves the current page's
+     * iterator of RecordIds.
+     */
+    public void mark() {
+      if (this.prevRecordId == null) {
+        return;
+      }
+
+      this.block.mark();
+      this.blockIter.mark();
+      this.markedBlockIter = this.blockIter;
+      this.markedPrevRecordId = this.prevRecordId;
+    }
+
+    /**
+     * Resets to the marked recordId.
+     *
+     * This implementation of reset restores the marked page's iterator,
+     * and calls reset() on it to move it to the correct record. Some extra
+     * care is taken to ensure that we properly reset the block page iterator.
+     */
+    public void reset() {
+      if (this.markedPrevRecordId == null) {
+        return;
+      }
+      this.block.reset();
+      // We don't want to get the current page again
+      this.block.next();
+      this.blockIter = this.markedBlockIter;
+      this.blockIter.reset();
+      // If we're at the end of the block, we don't want to repeat the record
+      if (!this.block.hasNext()) {
+        this.blockIter.next();
+        if (this.blockIter.hasNext()) {
+          this.blockIter.reset();
+        }
+      }
+
+      this.prevRecordId = null;
+      this.nextRecordId = this.markedPrevRecordId;
+    }
   }
 
   /**
