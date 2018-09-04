@@ -8,6 +8,7 @@ import edu.berkeley.cs186.database.DatabaseException;
 import edu.berkeley.cs186.database.TestUtils;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
+import edu.berkeley.cs186.database.table.stats.TableStats;
 
 public class TestSourceOperator extends QueryOperator {
   private List<Record> recordList;
@@ -35,6 +36,16 @@ public class TestSourceOperator extends QueryOperator {
   public boolean isSequentialScan() {
     return false;
   }
+  
+  //does nothing
+  public int estimateIOCost() throws QueryPlanException{
+	    return 0;
+  }
+  
+  //does nothing
+  public TableStats estimateStats() throws QueryPlanException {
+	    return null;
+	  }
 
   public TestSourceOperator(int numRecords) throws QueryPlanException {
     super(OperatorType.SEQSCAN, null);
