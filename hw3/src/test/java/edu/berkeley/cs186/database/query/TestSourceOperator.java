@@ -8,6 +8,7 @@ import edu.berkeley.cs186.database.DatabaseException;
 import edu.berkeley.cs186.database.TestUtils;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
+import edu.berkeley.cs186.database.table.stats.TableStats;
 
 public class TestSourceOperator extends QueryOperator {
   private List<Record> recordList;
@@ -65,6 +66,14 @@ public class TestSourceOperator extends QueryOperator {
       return TestUtils.createSchemaWithAllTypes();
     }
     return this.setSchema;
+  }
+
+  public TableStats estimateStats() throws QueryPlanException {
+    return new TableStats(this.computeSchema());
+  }
+
+  public int estimateIOCost() throws QueryPlanException {
+    return 1;
   }
 
 }

@@ -464,7 +464,7 @@ public class Table implements Iterable<Record>, Closeable {
    * See comments on the BacktrackingIterator interface for how mark and reset
    * should function.
    */
-  public class RIDPageIterator implements BacktrackingIterator<RecordId> {
+  //public class RIDPageIterator implements BacktrackingIterator<RecordId> {
     //member variables go here
 
     /**
@@ -472,7 +472,7 @@ public class Table implements Iterable<Record>, Closeable {
      * implement your own solution using whatever helper methods you would like.
      */
 
-    public RIDPageIterator(Page page) {
+    /*public RIDPageIterator(Page page) {
       throw new UnsupportedOperationException("hw3: TODO");
     }
 
@@ -490,8 +490,66 @@ public class Table implements Iterable<Record>, Closeable {
 
     public void reset() {
       throw new UnsupportedOperationException("hw3: TODO");
+    }*/
+  //}
+
+    public class RIDPageIterator implements BacktrackingIterator<RecordId> {
+      private Page page;
+      private byte[] bitmap;
+      private int nextEntryNum = -1;
+      private int markedNextEntryNum = 0;
+      private RecordId markedPrevRecordId = null;
+      private RecordId prevRecordId = null;
+      private RecordId nextRecordId = null;
+
+      public RIDPageIterator(Page page) {
+        this.page = page;
+        this.bitmap = Table.this.getBitMap(this.page);
+        fetchNextRecordId();
+      }
+
+      private void fetchNextRecordId() {
+        nextRecordId = null;
+        while (nextRecordId == null && ++nextEntryNum < Table.this.numRecordsPerPage) {
+          if (Bits.getBit(bitmap, nextEntryNum) == Bits.Bit.ONE) {
+            nextRecordId = new RecordId(page.getPageNum(), (short) nextEntryNum);
+          }
+        }
+      }
+
+      public boolean hasNext() {
+        return this.nextRecordId != null;
+      }
+
+      public RecordId next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+
+        this.prevRecordId = this.nextRecordId;
+        fetchNextRecordId();
+        return this.prevRecordId;
+      }
+
+      public void mark() {
+        if (this.prevRecordId == null) {
+          return;
+        }
+        this.markedNextEntryNum = this.nextEntryNum;
+        this.markedPrevRecordId = this.prevRecordId;
+      }
+
+      public void reset() {
+        if (this.markedPrevRecordId == null) {
+          return;
+        }
+        this.nextEntryNum = this.markedNextEntryNum - 1;
+        this.nextRecordId = this.markedPrevRecordId;
+        this.prevRecordId = null;
+      }
     }
-  }
+
+
 
   /**
    * Helper function to create a BacktrackingIterator from an Iterator of
@@ -550,8 +608,8 @@ public class Table implements Iterable<Record>, Closeable {
 
     public RIDBlockIterator(BacktrackingIterator<Page> block) {
       this.block = block;
-      throw new UnsupportedOperationException("hw3: TODO"); //if you want to add anything to this constructor, feel free to
-
+      //throw new UnsupportedOperationException("hw3: TODO"); //if you want to add anything to this constructor, feel free to
+      fetchNextRecordId();
     }
 
     /**
@@ -587,12 +645,39 @@ public class Table implements Iterable<Record>, Closeable {
       this(new ArrayBacktrackingIterator(pages));
     }
 
-    public boolean hasNext() {
+    /*public boolean hasNext() {
       throw new UnsupportedOperationException("hw3: TODO");
     }
 
     public RecordId next() {
       throw new UnsupportedOperationException("hw3: TODO");
+    }*/
+
+    private void fetchNextRecordId() {
+      this.nextRecordId = null;
+
+      while (blockIter == null || !blockIter.hasNext()) {
+        if (!block.hasNext()) {
+          return;
+        }
+        blockIter = new RIDPageIterator(block.next());
+      }
+
+      this.nextRecordId = this.blockIter.next();
+    }
+
+    public boolean hasNext() {
+      return this.nextRecordId != null;
+    }
+
+    public RecordId next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+
+      this.prevRecordId = this.nextRecordId;
+      fetchNextRecordId();
+      return this.prevRecordId;
     }
 
     /**

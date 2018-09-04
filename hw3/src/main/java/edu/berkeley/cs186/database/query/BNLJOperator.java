@@ -27,8 +27,8 @@ public class BNLJOperator extends JoinOperator {
     super(leftSource, rightSource, leftColumnName, rightColumnName, transaction, JoinType.BNLJ);
 
     this.numBuffers = transaction.getNumMemoryPages();
-    this.stats = this.estimateStats();
-    this.cost = this.estimateIOCost();
+    //this.stats = this.estimateStats();
+    //this.cost = this.estimateIOCost();
   }
 
   public Iterator<Record> iterator() throws QueryPlanException, DatabaseException {
