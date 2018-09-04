@@ -86,12 +86,4 @@ public class TestSourceOperator extends QueryOperator {
     }
     return this.setSchema;
   }
-
-  public TableStats estimateStats() throws QueryPlanException {
-    return new TableStats(this.computeSchema());
-  }
-
-  public int estimateIOCost() throws QueryPlanException {
-    return 1;
-  }
 }
