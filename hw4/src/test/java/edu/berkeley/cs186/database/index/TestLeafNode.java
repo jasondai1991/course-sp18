@@ -85,6 +85,69 @@ public class TestLeafNode {
     }
 
     @Test
+    public void testSmallBulkLoad() throws BPlusTreeException, IOException {
+      // Bulk loads with 60% of a leaf's worth, then checks that the
+      // leaf didn't split.
+      int d = 5;
+      float fillFactor = 0.8f;
+      BPlusTreeMetadata meta = getBPlusTreeMetadata(Type.intType(), d);
+      LeafNode leaf = getEmptyLeaf(meta, Optional.empty());
+
+      List<Pair<DataBox, RecordId>> data = new ArrayList<>();
+      for (int i = 0; i < (int) Math.ceil(1.5 * d * fillFactor); ++i) {
+        DataBox key = new IntDataBox(i);
+        RecordId rid = new RecordId(i, (short) i);
+        data.add(i, new Pair<>(key, rid));
+      }
+
+      assertFalse(leaf.bulkLoad(data.iterator(), fillFactor).isPresent());
+
+      Iterator<RecordId> iter = leaf.scanAll();
+      Iterator<Pair<DataBox, RecordId>> expected = data.iterator();
+      while (iter.hasNext() && expected.hasNext()) {
+        assertEquals(expected.next().getSecond(), iter.next());
+      }
+      assertFalse(iter.hasNext());
+      assertFalse(expected.hasNext());
+    }
+
+    // HIDDEN
+    @Test
+    public void testLargeBulkLoad() throws BPlusTreeException, IOException {
+      int d = 5;
+      float fillFactor = 0.8f;
+      BPlusTreeMetadata meta = getBPlusTreeMetadata(Type.intType(), d);
+      LeafNode leaf = getEmptyLeaf(meta, Optional.empty());
+
+      List<Pair<DataBox, RecordId>> data = new ArrayList<>();
+      for (int i = 0; i < (int) Math.ceil(2 * d * (1 - (1 - fillFactor) / 2)); ++i) {
+        DataBox key = new IntDataBox(i);
+        RecordId rid = new RecordId(i, (short) i);
+        data.add(i, new Pair<>(key, rid));
+      }
+
+      Optional<Pair<DataBox, Integer>> o = leaf.bulkLoad(data.iterator(), fillFactor);
+      assertTrue(o.isPresent());
+      assertEquals(new IntDataBox((int) Math.ceil(2 * d * fillFactor)), o.get().getFirst());
+      Page rightPage = meta.getAllocator().fetchPage(o.get().getSecond());
+      LeafNode right = LeafNode.fromBytes(meta, o.get().getSecond());
+
+      Iterator<RecordId> iter = leaf.scanAll();
+      Iterator<Pair<DataBox, RecordId>> expected = data.iterator();
+      for (int i = 0; i < (int) Math.ceil(2 * d * fillFactor); ++i) {
+        assertTrue(iter.hasNext());
+        assertEquals(expected.next().getSecond(), iter.next());
+      }
+      assertFalse(iter.hasNext());
+      iter = right.scanAll();
+      while (iter.hasNext() && expected.hasNext()) {
+        assertEquals(expected.next().getSecond(), iter.next());
+      }
+      assertFalse(iter.hasNext());
+      assertFalse(expected.hasNext());
+    }
+
+    @Test
     public void testNoOverflowPuts() throws BPlusTreeException, IOException {
       int d = 5;
       BPlusTreeMetadata meta = getBPlusTreeMetadata(Type.intType(), d);
