@@ -1,5 +1,8 @@
 package edu.berkeley.cs186.database.index;
 
+import java.io.IOException;
+import java.io.FileWriter;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -82,7 +85,6 @@ public class BPlusTree {
      */
     public BPlusTree(String filename, Type keySchema, int order)
         throws BPlusTreeException {
-
       // Sanity checks.
       if (order < 0) {
         String msg = String.format(
@@ -292,6 +294,45 @@ public class BPlusTree {
     }
 
     /**
+     * Bulk loads data into the B+ tree. Tree should be empty and the data
+     * iterator should be in sorted order (by the DataBox key field) and
+     * contain no duplicates (no error checking is done for this).
+     *
+     * fillFactor specifies the fill factor for leaves only; inner nodes should
+     * be filled up to full and split in half exactly like in put.
+     *
+     * This method should raise an exception if the tree is not empty at time
+     * of bulk loading. If data does not meet the preconditions (contains 
+     * duplicates or not in order), the resulting behavior is undefined.
+     *
+     * The behavior of this method should be similar to that of InnerNode's
+     * bulkLoad (see comments in BPlusNode.bulkLoad).
+     */
+    public void bulkLoad(Iterator<Pair<DataBox, RecordId>> data, float fillFactor) throws BPlusTreeException {
+      LeafNode left = this.root.getLeftmostLeaf();
+      if (left != this.root || left.scanAll().hasNext()) {
+        throw new BPlusTreeException("cannot bulk load into nonempty tree");
+      }
+      while (data.hasNext()) {
+        Optional<Pair<DataBox, Integer>> o = this.root.bulkLoad(data, fillFactor);
+        if (o.isPresent()) {
+          Pair<DataBox, Integer> p = o.get();
+
+          List<DataBox> keys = new ArrayList<>();
+          keys.add(p.getFirst());
+
+          List<Integer> children = new ArrayList<>();
+          children.add(root.getPage().getPageNum());
+          children.add(p.getSecond());
+
+          InnerNode inner = new InnerNode(metadata, keys, children);
+          this.root = inner;
+        }
+      }
+      writeHeader(headerPage.getByteBuffer());
+    }
+
+    /**
      * Deletes a (key, rid) pair from a B+ tree.
      *
      *   BPlusTree tree = new BPlusTree("t.txt", Type.intType(), 4);
@@ -336,6 +377,39 @@ public class BPlusTree {
       strings.add(root.toDot());
       strings.add("}");
       return String.join("\n", strings);
+    }
+
+    /**
+     * This function is very similar to toDot() except that we write
+     * the dot representation of the B+ tree to a dot file and then
+     * convert that to a PDF that will be stored in the src directory. Pass in a  
+     * string with the ".pdf" extension included at the end (ex "tree.pdf"). 
+     */
+    public void toDotPDFFile(String filename) {
+      List<String> strings = new ArrayList<>();
+      strings.add("digraph g {" );
+      strings.add("  node [shape=record, height=0.1];");
+      strings.add(root.toDot());
+      strings.add("}");
+      String tree_string = String.join("\n", strings);
+      
+      // Writing to intermediate dot file
+      try {
+    	  File file = new File("tree.dot");
+    	  FileWriter fileWriter = new FileWriter(file);
+    	  fileWriter.write(tree_string);
+    	  fileWriter.flush();
+    	  fileWriter.close();
+      } catch (IOException e) {
+    	  e.printStackTrace();
+      }
+
+      // Running command to convert dot file to PDF
+      try {
+    	Runtime.getRuntime().exec("dot -T pdf tree.dot -o " + filename);
+	  } catch (IOException e) {
+		e.printStackTrace();
+	  }
     }
 
     /**

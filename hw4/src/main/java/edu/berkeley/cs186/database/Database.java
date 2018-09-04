@@ -450,7 +450,24 @@ public class Database {
     }
 
     public PageIterator getPageIterator(String tableName) throws DatabaseException {
+      assert(this.active);
       return getTable(tableName).getAllocator().iterator();
+    }
+    
+
+    public BacktrackingIterator<Record> getBlockIterator(String tableName, Page[] block) throws DatabaseException {
+      assert(this.active);
+      return getTable(tableName).blockIterator(block);
+    }
+
+    public BacktrackingIterator<Record> getBlockIterator(String tableName, BacktrackingIterator<Page> block) throws DatabaseException {
+      assert(this.active);
+      return getTable(tableName).blockIterator(block);
+    }
+
+    public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> block, int maxPages) throws DatabaseException {
+      assert(this.active);
+      return getTable(tableName).blockIterator(block, maxPages);
     }
 
 

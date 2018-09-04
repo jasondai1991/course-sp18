@@ -16,7 +16,6 @@ import edu.berkeley.cs186.database.databox.DataBox;
 import edu.berkeley.cs186.database.io.Page;
 import edu.berkeley.cs186.database.io.PageAllocator;
 import edu.berkeley.cs186.database.io.PageAllocator.PageIterator;
-import edu.berkeley.cs186.database.table.stats.TableStats;
 
 /**
  * # Overview
@@ -117,9 +116,12 @@ public class Table implements Iterable<Record>, Closeable {
   // The number of records on each data page.
   private int numRecordsPerPage;
 
+<<<<<<< HEAD
   // Statistics about the contents of the database.
   private TableStats stats;
 
+=======
+>>>>>>> origin/master
   // The page numbers of all allocated pages which have room for more records.
   private TreeSet<Integer> freePageNums;
 
@@ -138,7 +140,10 @@ public class Table implements Iterable<Record>, Closeable {
     this.allocator = new PageAllocator(filename, true);
     this.bitmapSizeInBytes = computeBitmapSizeInBytes(Page.pageSize, schema);
     numRecordsPerPage = computeNumRecordsPerPage(Page.pageSize, schema);
+<<<<<<< HEAD
     this.stats = new TableStats(this.schema);
+=======
+>>>>>>> origin/master
     this.freePageNums = new TreeSet<Integer>();
     this.numRecords = 0;
 
@@ -157,10 +162,13 @@ public class Table implements Iterable<Record>, Closeable {
     this.bitmapSizeInBytes = computeBitmapSizeInBytes(Page.pageSize, this.schema);
     this.numRecordsPerPage = computeNumRecordsPerPage(Page.pageSize, this.schema);
 
+<<<<<<< HEAD
     // We compute the stats, free pages, and number of records naively. We
     // iterate through every single data page of the file, and for each data
     // data page, we use the bitmap to read every single record.
     this.stats = new TableStats(this.schema);
+=======
+>>>>>>> origin/master
     this.freePageNums = new TreeSet<Integer>();
     this.numRecords = 0;
 
@@ -173,7 +181,10 @@ public class Table implements Iterable<Record>, Closeable {
       for (short i = 0; i < numRecordsPerPage; ++i) {
         if (Bits.getBit(bitmap, i) == Bits.Bit.ONE) {
           Record r = getRecord(new RecordId(page.getPageNum(), i));
+<<<<<<< HEAD
           stats.addRecord(r);
+=======
+>>>>>>> origin/master
           numRecords++;
         }
       }
@@ -209,10 +220,13 @@ public class Table implements Iterable<Record>, Closeable {
     return numRecordsPerPage;
   }
 
+<<<<<<< HEAD
   public TableStats getStats() {
     return stats;
   }
 
+=======
+>>>>>>> origin/master
   public long getNumRecords() {
     return numRecords;
   }
@@ -222,8 +236,11 @@ public class Table implements Iterable<Record>, Closeable {
     return allocator.getNumPages() - 1;
   }
 
+<<<<<<< HEAD
   // elsewhere reads the bitmap of tables, so we're forced to make it public.
   // We should refactor to avoid this.
+=======
+>>>>>>> origin/master
   public byte[] getBitMap(Page page) {
     byte[] bytes = new byte[bitmapSizeInBytes];
     page.getByteBuffer().get(bytes);
@@ -243,6 +260,7 @@ public class Table implements Iterable<Record>, Closeable {
   }
 
   // Modifiers /////////////////////////////////////////////////////////////////
+<<<<<<< HEAD
   /**
    * buildStatistics builds histograms on each of the columns of a table. Running
    * it multiple times refreshes the statistics
@@ -252,6 +270,8 @@ public class Table implements Iterable<Record>, Closeable {
    return this.stats;
   }
 
+=======
+>>>>>>> origin/master
   private synchronized void insertRecord(Page page, int entryNum, Record record) {
     int offset = bitmapSizeInBytes + (entryNum * schema.getSizeInBytes());
     byte[] bytes = record.toBytes(schema);
@@ -262,7 +282,11 @@ public class Table implements Iterable<Record>, Closeable {
 
   /**
    * addRecord adds a record to this table and returns the record id of the
+<<<<<<< HEAD
    * newly added record. stats, freePageNums, and numRecords are updated
+=======
+   * newly added record. freePageNums, and numRecords are updated
+>>>>>>> origin/master
    * accordingly. The record is added to the first free slot of the first free
    * page (if one exists, otherwise one is allocated). For example, if the
    * first free page has bitmap 0b11101000, then the record is inserted into
@@ -294,7 +318,10 @@ public class Table implements Iterable<Record>, Closeable {
     Bits.setBit(page.getByteBuffer(), entryNum, Bits.Bit.ONE);
 
     // Update the metadata.
+<<<<<<< HEAD
     stats.addRecord(record);
+=======
+>>>>>>> origin/master
     if (numRecordsOnPage(page) == numRecordsPerPage) {
       freePageNums.pollFirst();
     }
@@ -324,7 +351,11 @@ public class Table implements Iterable<Record>, Closeable {
 
   /**
    * Overwrites an existing record with new values and returns the existing
+<<<<<<< HEAD
    * record. stats is updated accordingly. An exception is thrown if rid does
+=======
+   * record. An exception is thrown if rid does
+>>>>>>> origin/master
    * not correspond to an existing record in the table.
    */
   public synchronized Record updateRecord(List<DataBox> values, RecordId rid) throws DatabaseException {
@@ -334,14 +365,21 @@ public class Table implements Iterable<Record>, Closeable {
 
     Page page = allocator.fetchPage(rid.getPageNum());
     insertRecord(page, rid.getEntryNum(), newRecord);
+<<<<<<< HEAD
     this.stats.removeRecord(oldRecord);
     this.stats.addRecord(newRecord);
+=======
+>>>>>>> origin/master
     return oldRecord;
   }
 
   /**
    * Deletes and returns the record specified by rid from the table and updates
+<<<<<<< HEAD
    * stats, freePageNums, and numRecords as necessary. An exception is thrown
+=======
+   * freePageNums, and numRecords as necessary. An exception is thrown
+>>>>>>> origin/master
    * if rid does not correspond to an existing record in the table.
    */
   public synchronized Record deleteRecord(RecordId rid) throws DatabaseException {
@@ -350,7 +388,10 @@ public class Table implements Iterable<Record>, Closeable {
     Record record = getRecord(rid);
     Bits.setBit(page.getByteBuffer(), rid.getEntryNum(), Bits.Bit.ZERO);
 
+<<<<<<< HEAD
     stats.removeRecord(record);
+=======
+>>>>>>> origin/master
     if(numRecordsOnPage(page) == numRecordsPerPage - 1) {
       freePageNums.add(page.getPageNum());
     }
@@ -444,6 +485,56 @@ public class Table implements Iterable<Record>, Closeable {
       return new RecordIterator(this, ridIterator());
   }
 
+<<<<<<< HEAD
+=======
+  public BacktrackingIterator<Record> blockIterator(Page[] block) {
+    return new RecordIterator(this, new RIDBlockIterator(block));
+  }
+
+  public BacktrackingIterator<Record> blockIterator(BacktrackingIterator<Page> block) {
+    return new RecordIterator(this, new RIDBlockIterator(block));
+  }
+
+  public BacktrackingIterator<Record> blockIterator(Iterator<Page> block, int maxRecords) {
+    return new RecordIterator(this, new RIDBlockIterator(block, maxRecords));
+  }
+
+  /**
+   * RIDPageIterator is a BacktrackingIterator over the RecordIds of a single
+   * page of the table.
+   *
+   * See comments on the BacktrackingIterator interface for how mark and reset
+   * should function.
+   */
+  public class RIDPageIterator implements BacktrackingIterator<RecordId> {
+    //member variables go here
+
+    /**
+     * The following method signature is provided for guidance, but not necessary. Feel free to
+     * implement your own solution using whatever helper methods you would like.
+     */
+
+    public RIDPageIterator(Page page) {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public RecordId next() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public void mark() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public void reset() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+  }
+>>>>>>> origin/master
 
   /**
    * Helper function to create a BacktrackingIterator from an Iterator of
@@ -467,6 +558,7 @@ public class Table implements Iterable<Record>, Closeable {
   }
 
   /**
+<<<<<<< HEAD
    * A helper function that returns the same iterator passed in, but with
    * a single page skipped.
    */
@@ -511,6 +603,154 @@ public class Table implements Iterable<Record>, Closeable {
           return new RecordId(page.getPageNum(), (short) entryNum);
         }
       }
+=======
+   * RIDBlockIterator is a BacktrackingIterator yielding RecordIds of a block
+   * of pages.
+   *
+   * A "block" is specified by a BacktrackingIterator of Pages: every single
+   * Page returned by the iterator is part of the block. Your code should only
+   * utilize this iterator's functionality for fetching pages, i.e. you should
+   * *not* fetch every Page from the block iterator into an array or collection.
+   *
+   * The mark and reset methods have been provided for you already, and work by
+   * saving a BacktrackingIterator of RecordIds over the appropriate page.
+   *
+   * The iterator maintains a few pieces of state:
+   * - block is simply the BacktrackingIterator<Page> specifying the pages in
+   *   the block.
+   * - blockIter is a BacktrackingIterator over RecordIds of the current page we
+   *   are iterating over.
+   * - prevRecordId is the last RecordId that next() returned.
+   * - nextRecordId is the next RecordId that next() will return.
+   *
+   * In addition to these, we maintain some state to help with the
+   * implementation of mark() and reset(); you should not need to use these
+   * for implementing next() and hasNext().
+   */
+  public class RIDBlockIterator implements BacktrackingIterator<RecordId> {
+    private BacktrackingIterator<Page> block = null;
+    private BacktrackingIterator<RecordId> blockIter = null;
+
+    private BacktrackingIterator<RecordId> markedBlockIter = null;
+    private RecordId markedPrevRecordId = null;
+
+    private RecordId prevRecordId = null;
+    private RecordId nextRecordId = null;
+
+    public RIDBlockIterator(BacktrackingIterator<Page> block) {
+      this.block = block;
+      throw new UnsupportedOperationException("hw3: TODO"); //if you want to add anything to this constructor, feel free to
+
+    }
+
+    /**
+     * This is an extra constructor that allows one to create an
+     * RIDBlockIterator by taking the first maxPages of an iterator of Pages.
+     *
+     * If there are fewer than maxPages number of Pages available in pageIter,
+     * then all remaining pages shall be used in the "block"; otherwise,
+     * only the first maxPages number of pages shall be used.
+     *
+     * Note that this also advances pageIter by maxPages, so you can do the
+     * following:
+     *
+     * Iterator<Page> pageIter = // ...
+     * RIDBlockIterator firstBlock = new RIDBlockIterator(pageIter, 100);
+     * RIDBlockIterator secondBlock = new RIDBlockIterator(pageIter, 100);
+     * RIDBlockIterator thirdBlock = new RIDBlockIterator(pageIter, 100);
+     *
+     * to get iterators over the first 100 pages, second 100 pages, and third
+     * 100 pages.
+     */
+    public RIDBlockIterator(Iterator<Page> pageIter, int maxPages) {
+      this(Table.getBlockFromIterator(pageIter, maxPages));
+    }
+
+    /**
+     * This is an extra constructor that allows one to create an
+     * RIDBlockIterator over an array of Pages.
+     *
+     * Every page in the pages array will be used in the block of pages.
+     */
+    public RIDBlockIterator(Page[] pages) {
+      this(new ArrayBacktrackingIterator(pages));
+    }
+
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    public RecordId next() {
+      throw new UnsupportedOperationException("hw3: TODO");
+    }
+
+    /**
+     * Marks the last recordId returned by next().
+     *
+     * This implementation of mark simply marks and saves the current page's
+     * iterator of RecordIds.
+     */
+    public void mark() {
+      if (this.prevRecordId == null) {
+        return;
+      }
+
+      this.block.mark();
+      this.blockIter.mark();
+      this.markedBlockIter = this.blockIter;
+      this.markedPrevRecordId = this.prevRecordId;
+    }
+
+    /**
+     * Resets to the marked recordId.
+     *
+     * This implementation of reset restores the marked page's iterator,
+     * and calls reset() on it to move it to the correct record. Some extra
+     * care is taken to ensure that we properly reset the block page iterator.
+     */
+    public void reset() {
+      if (this.markedPrevRecordId == null) {
+        return;
+      }
+      this.block.reset();
+      // We don't want to get the current page again
+      this.block.next();
+      this.blockIter = this.markedBlockIter;
+      this.blockIter.reset();
+      // If we're at the end of the block, we don't want to repeat the record
+      if (!this.block.hasNext()) {
+        this.blockIter.next();
+        if (this.blockIter.hasNext()) {
+          this.blockIter.reset();
+        }
+      }
+
+      this.prevRecordId = null;
+      this.nextRecordId = this.markedPrevRecordId;
+    }
+  }
+
+  /**
+   * A helper function that returns the same iterator passed in, but with
+   * a single page skipped.
+   */
+  private static Iterator<Page> iteratorSkipPage(Iterator<Page> iter) {
+    iter.next();
+    return iter;
+  }
+
+  /**
+   * TableIterator is an Iterator over the record IDs of a table.
+   *
+   * This is just a very thin wrapper around RIDBlockIterator, where the "block"
+   * is an iterator of all the pages of the table (minus the header page). Once
+   * RIDBlockIterator is filled in, all tests on TableIterator should
+   * automatically pass.
+   */
+  public class TableIterator extends RIDBlockIterator {
+    public TableIterator() {
+      super((BacktrackingIterator<Page>) Table.iteratorSkipPage(Table.this.allocator.iterator()));
+>>>>>>> origin/master
     }
   }
 }

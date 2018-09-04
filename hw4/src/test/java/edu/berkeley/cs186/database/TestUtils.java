@@ -2,6 +2,7 @@ package edu.berkeley.cs186.database;
 
 import edu.berkeley.cs186.database.databox.*;
 import edu.berkeley.cs186.database.query.QueryPlanException;
+import edu.berkeley.cs186.database.query.TestSourceOperator;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
 
@@ -12,13 +13,6 @@ import java.util.List;
 public class TestUtils {
   public static Schema createSchemaWithAllTypes() {
     List<String> names = Arrays.asList("bool", "int", "string", "float");
-    List<Type> types = Arrays.asList(Type.boolType(), Type.intType(),
-                                     Type.stringType(5), Type.floatType());
-    return new Schema(names, types);
-  }
-
-  public static Schema createSchemaWithAllTypes(String prefix) {
-    List<String> names = Arrays.asList(prefix+"bool", prefix+"int", prefix+"string", prefix+"float");
     List<Type> types = Arrays.asList(Type.boolType(), Type.intType(),
                                      Type.stringType(5), Type.floatType());
     return new Schema(names, types);
@@ -78,4 +72,44 @@ public class TestUtils {
     return new Record(dataValues);
   }
 
+
+  public static TestSourceOperator createTestSourceOperatorWithInts(List<Integer> values)
+    throws QueryPlanException {
+    List<String> columnNames = new ArrayList<String>();
+    columnNames.add("int");
+    List<Type> columnTypes = new ArrayList<Type>();
+    columnTypes.add(Type.intType());
+    Schema schema = new Schema(columnNames, columnTypes);
+
+    List<Record> recordList = new ArrayList<Record>();
+
+    for (int v : values) {
+      List<DataBox> recordValues = new ArrayList<DataBox>();
+      recordValues.add(new IntDataBox(v));
+      recordList.add(new Record(recordValues));
+    }
+
+
+    return new TestSourceOperator(recordList, schema);
+  }
+
+  public static TestSourceOperator createTestSourceOperatorWithFloats(List<Float> values)
+    throws QueryPlanException {
+    List<String> columnNames = new ArrayList<String>();
+    columnNames.add("float");
+    List<Type> columnTypes = new ArrayList<Type>();
+    columnTypes.add(Type.floatType());
+    Schema schema = new Schema(columnNames, columnTypes);
+
+    List<Record> recordList = new ArrayList<Record>();
+
+    for (float v : values) {
+      List<DataBox> recordValues = new ArrayList<DataBox>();
+      recordValues.add(new FloatDataBox(v));
+      recordList.add(new Record(recordValues));
+    }
+
+
+    return new TestSourceOperator(recordList, schema);
+  }
 }
